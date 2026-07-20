@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420">
+  <rect width="640" height="420" rx="28" fill="#fff7ed"/>
+  <rect x="34" y="36" width="572" height="348" rx="24" fill="#ffedd5"/>
+  <rect x="74" y="92" width="212" height="176" rx="18" fill="#fb923c"/>
+  <rect x="320" y="92" width="246" height="112" rx="18" fill="#f97316"/>
+  <rect x="320" y="224" width="246" height="100" rx="18" fill="#fdba74"/>
+  <circle cx="470" cy="152" r="34" fill="#fff7ed"/>
+  <path d="M132 246c24-38 74-58 122-42" stroke="#78350f" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <path d="M96 282h170" stroke="#7c2d12" stroke-width="10" stroke-linecap="round"/>
+  <text x="90" y="352" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#9a2c0d">Stay somewhere amazing</text>
+</svg>

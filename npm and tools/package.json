@@ -1,0 +1,17 @@
+{
+  "name": "npm-test",
+  "version": "1.0.0",
+  "description": "This project is being created to learn about npm.",
+  "license": "ISC",
+  "author": "akanksha maurya",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js",
+    "khul-ja-sim-sim": "node app.js"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
