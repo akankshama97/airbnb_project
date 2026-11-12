@@ -1,9 +1,9 @@
 {
   "name": "airbnb-project",
   "version": "1.0.0",
-  "main": "Image Upload and Download/app.js",
+  "main": "app.js",
   "scripts": {
-    "start": "node \"Image Upload and Download/app.js\"",
+    "start": "node app.js",
     "build:css": "cd \"Image Upload and Download\" && npm run build:css"
   },
   "dependencies": {

@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "Image Upload and Download/app.js",
+      "src": "app.js",
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
@@ -16,7 +16,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "Image Upload and Download/app.js"
+      "dest": "app.js"
     }
   ]
 }
