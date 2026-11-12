@@ -1,4 +1,5 @@
 // Core Module
 const path = require('path');
 
-module.exports = path.dirname(require.main.filename);
+// Consistently returns the root directory of this project
+module.exports = path.join(__dirname, '..');

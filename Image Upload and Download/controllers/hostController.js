@@ -3,6 +3,8 @@ const fs = require("fs");
 const Home = require("../models/home");
 const User = require("../models/user");
 const rootDir = require("../utils/pathUtil");
+const isVercel = Boolean(process.env.VERCEL);
+const uploadsDir = isVercel ? path.join('/tmp', 'uploads') : path.join(rootDir, 'uploads');
 
 exports.getAddHome = (req, res, next) => {
   res.render("host/edit-home", {
@@ -119,12 +121,14 @@ exports.postEditHome = async (req, res, next) => {
     if (req.file) {
       // If there was an old uploaded file, safely remove it
       if (home.photo && home.photo.includes("/uploads/")) {
-        const oldFilename = home.photo.replace(/^\/uploads\//, "").replace(/^uploads[\/\\]/, "");
-        const oldPath = path.join(rootDir, "uploads", oldFilename);
-        if (fs.existsSync(oldPath)) {
-          fs.unlink(oldPath, (err) => {
-            if (err) console.log("Error while deleting old photo:", err);
-          });
+        try {
+          const oldFilename = home.photo.replace(/^\/uploads\//, "").replace(/^uploads[\/\\]/, "");
+          const oldPath1 = path.join(uploadsDir, oldFilename);
+          const oldPath2 = path.join(rootDir, "uploads", oldFilename);
+          if (fs.existsSync(oldPath1)) fs.unlink(oldPath1, () => {});
+          else if (fs.existsSync(oldPath2)) fs.unlink(oldPath2, () => {});
+        } catch (e) {
+          console.log("Old photo removal error:", e.message);
         }
       }
       home.photo = "/uploads/" + req.file.filename;
@@ -147,12 +151,14 @@ exports.postDeleteHome = async (req, res, next) => {
     if (home) {
       // Safely delete photo file if it was uploaded
       if (home.photo && home.photo.includes("/uploads/")) {
-        const filename = home.photo.replace(/^\/uploads\//, "").replace(/^uploads[\/\\]/, "");
-        const filePath = path.join(rootDir, "uploads", filename);
-        if (fs.existsSync(filePath)) {
-          fs.unlink(filePath, (err) => {
-            if (err) console.log("Error while deleting photo file:", err);
-          });
+        try {
+          const filename = home.photo.replace(/^\/uploads\//, "").replace(/^uploads[\/\\]/, "");
+          const filePath1 = path.join(uploadsDir, filename);
+          const filePath2 = path.join(rootDir, "uploads", filename);
+          if (fs.existsSync(filePath1)) fs.unlink(filePath1, () => {});
+          else if (fs.existsSync(filePath2)) fs.unlink(filePath2, () => {});
+        } catch (e) {
+          console.log("Photo removal error:", e.message);
         }
       }
 

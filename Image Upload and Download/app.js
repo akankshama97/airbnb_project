@@ -2,8 +2,11 @@
 const path = require('path');
 const fs = require('fs');
 
+// Project root directory
+const rootDir = require("./utils/pathUtil");
+
 // Simple .env file loader for zero-dependency environment variables
-const envPath = path.join(__dirname, '.env');
+const envPath = path.join(rootDir, '.env');
 if (fs.existsSync(envPath)) {
   try {
     const envContent = fs.readFileSync(envPath, 'utf-8');
@@ -43,29 +46,41 @@ const SESSION_SECRET = process.env.SESSION_SECRET || "Complete Coding Secret Key
 const storeRouter = require("./routes/storeRouter");
 const hostRouter = require("./routes/hostRouter");
 const authRouter = require("./routes/authRouter");
-const rootDir = require("./utils/pathUtil");
 const errorsController = require("./controllers/errors");
 
 const app = express();
 
+// View Engine Setup (Absolute path to views ensures Vercel and local both work)
 app.set('view engine', 'ejs');
-app.set('views', 'views');
+app.set('views', path.join(rootDir, 'views'));
 
-// Ensure uploads folder exists so multer doesn't fail
-const uploadsDir = path.join(rootDir, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+// Safe Uploads Directory (On Vercel, filesystem is read-only except /tmp)
+const isVercel = Boolean(process.env.VERCEL);
+const uploadsDir = isVercel
+  ? path.join('/tmp', 'uploads')
+  : path.join(rootDir, 'uploads');
+
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch (err) {
+  console.log('Uploads directory creation notice:', err.message);
 }
 
-// MongoDB Session Store
-const store = new MongoDBStore({
-  uri: DB_PATH,
-  collection: 'sessions'
-});
-
-store.on('error', function(error) {
-  console.log('Session store error: ', error);
-});
+// MongoDB Session Store with safe fallback
+let store;
+try {
+  store = new MongoDBStore({
+    uri: DB_PATH,
+    collection: 'sessions'
+  });
+  store.on('error', function(error) {
+    console.log('Session store warning: ', error.message);
+  });
+} catch (err) {
+  console.log('Could not initialize MongoDB session store:', err.message);
+}
 
 const randomString = (length) => {
   const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -114,6 +129,7 @@ app.use(multer(multerOptions).single('photo'));
 // Static assets
 app.use(express.static(path.join(rootDir, 'public')));
 app.use('/uploads', express.static(uploadsDir));
+app.use('/uploads', express.static(path.join(rootDir, 'uploads')));
 // Compatibility fallback for nested routes
 app.use('/host/uploads', express.static(uploadsDir));
 app.use('/homes/uploads', express.static(uploadsDir));
@@ -123,7 +139,7 @@ app.use(session({
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store: store,
+  store: store || undefined,
   cookie: {
     maxAge: 24 * 60 * 60 * 1000 // 1 day
   }
@@ -134,6 +150,33 @@ app.use((req, res, next) => {
   req.isLoggedIn = Boolean(req.session && req.session.isLoggedIn);
   res.locals.isLoggedIn = req.isLoggedIn;
   res.locals.user = (req.session && req.session.user) ? req.session.user : null;
+  next();
+});
+
+// Database connection helper (essential for Serverless like Vercel)
+let isConnected = false;
+const connectDB = async () => {
+  if (isConnected || mongoose.connection.readyState === 1) {
+    isConnected = true;
+    return;
+  }
+  try {
+    await mongoose.connect(DB_PATH);
+    isConnected = true;
+    console.log('Connected to MongoDB successfully');
+  } catch (err) {
+    console.log('MongoDB connection error:', err.message);
+  }
+};
+
+// Initiate DB connection
+connectDB();
+
+// Ensure DB is connected before processing requests
+app.use(async (req, res, next) => {
+  if (!isConnected && mongoose.connection.readyState !== 1) {
+    await connectDB();
+  }
   next();
 });
 
@@ -154,19 +197,12 @@ app.use('/host', hostRouter);
 // 404 handler
 app.use(errorsController.pageNotFound);
 
-// Database connection & Server start
-mongoose.connect(DB_PATH)
-  .then(() => {
-    console.log('Connected to MongoDB successfully');
-    if (!process.env.VERCEL) {
-      app.listen(PORT, () => {
-        console.log(`Server running on address http://localhost:${PORT}`);
-      });
-    }
-  })
-  .catch((err) => {
-    console.log('Error while connecting to Mongo: ', err);
+// Start server when run directly (not in Vercel serverless)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running on address http://localhost:${PORT}`);
   });
+}
 
+// Export for Vercel Serverless Function
 module.exports = app;
-
