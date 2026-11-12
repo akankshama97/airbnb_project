@@ -6,9 +6,9 @@
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
-          "Image Upload and Download/views/**",
-          "Image Upload and Download/public/**",
-          "Image Upload and Download/uploads/**"
+          "views/**",
+          "public/**",
+          "uploads/**"
         ]
       }
     }

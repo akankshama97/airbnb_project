@@ -1,0 +1,152 @@
+<%- include('../partials/head') %>
+  </head>
+  <body class="bg-gray-50 min-h-screen text-gray-800 flex flex-col">
+    <%- include('../partials/nav') %>
+
+    <main class="container mx-auto max-w-xl px-4 py-8 flex-1">
+      <div class="mb-4">
+        <a href="/host/host-home-list" class="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-red-500 transition">
+          <i class="fa-solid fa-arrow-left text-xs"></i>
+          <span>Back to properties</span>
+        </a>
+      </div>
+
+      <div class="bg-white rounded-xl border border-gray-200 p-6 sm:p-8 shadow-sm">
+        <h1 class="text-2xl font-bold text-gray-900 mb-1">
+          <%= editing ? "Edit Property Details" : "Register a New Home" %>
+        </h1>
+        <p class="text-xs text-gray-500 mb-6">
+          <%= editing ? "Update your property information below" : "Fill out the form below to list your home on Airbnb" %>
+        </p>
+
+        <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+          <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded-r-md mb-5 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-circle-exclamation text-red-500"></i>
+            <span><%= errorMessage %></span>
+          </div>
+        <% } %>
+
+        <form action="/host/<%= editing ? 'edit-home' : 'add-home' %>" method="POST" enctype="multipart/form-data" class="space-y-4">
+          <% if (editing) { %>
+            <input type="hidden" name="id" value="<%= home._id %>" />
+          <% } %>
+
+          <!-- House Name -->
+          <div>
+            <label for="houseName" class="block text-xs font-semibold text-gray-700 mb-1">
+              House / Property Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="houseName"
+              name="houseName"
+              value="<%= home.houseName || '' %>"
+              placeholder="e.g. Sunny Beachside Villa"
+              class="w-full px-3.5 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+              required />
+          </div>
+
+          <!-- Price & Rating row -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="price" class="block text-xs font-semibold text-gray-700 mb-1">
+                Price Per Night (₹) <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                id="price"
+                name="price"
+                min="100"
+                value="<%= home.price || '' %>"
+                placeholder="e.g. 2500"
+                class="w-full px-3.5 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                required />
+            </div>
+
+            <div>
+              <label for="rating" class="block text-xs font-semibold text-gray-700 mb-1">
+                Initial Rating (1 - 5) <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                min="1"
+                max="5"
+                id="rating"
+                name="rating"
+                value="<%= home.rating || '4.5' %>"
+                placeholder="e.g. 4.8"
+                class="w-full px-3.5 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                required />
+            </div>
+          </div>
+
+          <!-- Location -->
+          <div>
+            <label for="location" class="block text-xs font-semibold text-gray-700 mb-1">
+              Location / City <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="location"
+              name="location"
+              value="<%= home.location || '' %>"
+              placeholder="e.g. Goa, India"
+              class="w-full px-3.5 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+              required />
+          </div>
+
+          <!-- Photo Upload -->
+          <div>
+            <label for="photo" class="block text-xs font-semibold text-gray-700 mb-1">
+              <%= editing ? "Change Photo (Optional)" : "Property Photo" %> <span class="text-red-500"><%= editing ? "" : "*" %></span>
+            </label>
+
+            <% if (editing && home.photo) { %>
+              <% const currentPhoto = home.photo.startsWith('/') ? home.photo : '/' + home.photo.replace(/\\/g, '/'); %>
+              <div class="flex items-center gap-3 mb-2 p-2 bg-gray-50 border border-gray-200 rounded-md">
+                <img src="<%= currentPhoto %>" alt="Current Photo" class="w-16 h-12 object-cover rounded" onerror="this.src='/images/house1.jpg'" />
+                <span class="text-xs text-gray-500">Current photo uploaded. Choose a new file to replace it.</span>
+              </div>
+            <% } %>
+
+            <input
+              type="file"
+              id="photo"
+              name="photo"
+              accept="image/png, image/jpeg, image/jpg, image/webp"
+              class="w-full px-3 py-1.5 text-xs text-gray-600 border border-gray-300 rounded-md file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-600 hover:file:bg-red-100 transition cursor-pointer"
+              <%= editing ? "" : "required" %> />
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label for="description" class="block text-xs font-semibold text-gray-700 mb-1">
+              Description
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              rows="4"
+              placeholder="Write a few lines describing what makes this place special..."
+              class="w-full px-3.5 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"><%= home.description || '' %></textarea>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-2">
+            <button
+              type="submit"
+              class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2.5 px-4 rounded-md transition text-sm shadow-sm flex items-center justify-center gap-2">
+              <i class="fa-solid fa-check text-xs"></i>
+              <span><%= editing ? "Update Property" : "Register Property" %></span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 py-6 mt-auto text-center text-xs text-gray-500">
+      <p>&copy; <%= new Date().getFullYear() %> Airbnb Practice Project.</p>
+    </footer>
+  </body>
+</html>

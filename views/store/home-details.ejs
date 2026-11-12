@@ -1,0 +1,94 @@
+<%- include('../partials/head') %>
+  </head>
+  <body class="bg-gray-50 min-h-screen text-gray-800 flex flex-col">
+    <%- include('../partials/nav') %>
+
+    <main class="container mx-auto max-w-5xl px-4 py-8 flex-1">
+      <!-- Back Link -->
+      <div class="mb-5">
+        <a href="/homes" class="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-red-500 transition">
+          <i class="fa-solid fa-arrow-left text-xs"></i>
+          <span>Back to all homes</span>
+        </a>
+      </div>
+
+      <% const photoUrl = home.photo ? (home.photo.startsWith('/') ? home.photo : '/' + home.photo.replace(/\\/g, '/')) : '/images/house1.jpg'; %>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
+          
+          <!-- Image -->
+          <div class="h-72 md:h-full min-h-[320px] bg-gray-100 relative">
+            <img
+              src="<%= photoUrl %>"
+              alt="<%= home.houseName %>"
+              class="w-full h-full object-cover"
+              onerror="this.src='/images/house1.jpg'" />
+          </div>
+
+          <!-- Content Details -->
+          <div class="p-6 md:p-8 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="text-xs uppercase tracking-wider font-semibold text-red-500 bg-red-50 px-2.5 py-1 rounded">
+                  Verified Property
+                </span>
+                <div class="flex items-center gap-1 text-sm font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
+                  <i class="fa-solid fa-star text-amber-500"></i>
+                  <span><%= home.rating %> / 5</span>
+                </div>
+              </div>
+
+              <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                <%= home.houseName %>
+              </h1>
+
+              <p class="text-sm text-gray-600 flex items-center gap-1.5 mb-6">
+                <i class="fa-solid fa-location-dot text-red-500"></i>
+                <span><%= home.location %></span>
+              </p>
+
+              <!-- Price Box -->
+              <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-100">
+                <span class="text-xs text-gray-500 block mb-0.5">Price per night</span>
+                <div class="text-2xl font-bold text-gray-900">
+                  ₹<%= home.price.toLocaleString('en-IN') %>
+                  <span class="text-xs font-normal text-gray-500">all taxes included</span>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div class="mb-6">
+                <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                  About this place
+                </h2>
+                <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                  <%= home.description || 'A cozy and welcoming place to stay. Fully equipped with all essential amenities.' %>
+                </p>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="pt-4 border-t border-gray-100 flex flex-wrap items-center gap-3">
+              <a
+                href="/bookings"
+                class="flex-1 text-center bg-red-500 hover:bg-red-600 text-white font-medium py-2.5 px-4 rounded-md transition text-sm shadow-sm">
+                Reserve / Book Now
+              </a>
+
+              <% if (isLoggedIn && user && user.userType === 'guest') { %>
+                <%- include('../partials/favourite', { home: home }) %>
+              <% } %>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 py-6 mt-auto text-center text-xs text-gray-500">
+      <p>&copy; <%= new Date().getFullYear() %> Airbnb Practice Project.</p>
+    </footer>
+  </body>
+</html>

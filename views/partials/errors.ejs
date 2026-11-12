@@ -1,0 +1,13 @@
+<% if (typeof errors !== 'undefined' && errors && errors.length > 0) { %>
+  <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-md mb-5 text-sm" role="alert">
+    <div class="flex items-center gap-2 font-semibold mb-1">
+      <i class="fa-solid fa-circle-exclamation text-red-500"></i>
+      <span>Please fix the following:</span>
+    </div>
+    <ul class="list-disc list-inside space-y-1 ml-1 text-red-600">
+      <% errors.forEach(error => { %>
+        <li><%= error %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
