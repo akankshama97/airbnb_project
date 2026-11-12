@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "Image Upload and Download/app.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "Image Upload and Download/views/**",
+          "Image Upload and Download/public/**",
+          "Image Upload and Download/uploads/**"
+        ]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "Image Upload and Download/app.js"
+    }
+  ]
+}

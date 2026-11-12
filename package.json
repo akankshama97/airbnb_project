@@ -1,11 +1,23 @@
 {
-  "dependencies": {
-    "ejs": "^6.0.1",
-    "express": "^5.2.1",
-    "init": "^0.1.2",
-    "mysql2": "^3.22.6"
+  "name": "airbnb-project",
+  "version": "1.0.0",
+  "main": "Image Upload and Download/app.js",
+  "scripts": {
+    "start": "node \"Image Upload and Download/app.js\"",
+    "build:css": "cd \"Image Upload and Download\" && npm run build:css"
   },
-  "devDependencies": {
-    "nodemon": "^3.1.14"
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "body-parser": "^1.20.3",
+    "connect-mongodb-session": "^5.0.0",
+    "cookie-parser": "^1.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.22.2",
+    "express-session": "^1.19.0",
+    "express-validator": "^7.3.2",
+    "mongodb": "^6.21.0",
+    "mongoose": "^9.7.4",
+    "multer": "^2.2.0",
+    "mysql2": "^3.11.4"
   }
 }
