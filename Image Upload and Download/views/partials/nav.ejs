@@ -1,102 +1,94 @@
-<header class="bg-red-500 text-white p-4 shadow-md sticky top-0 z-10">
-  <nav class="container mx-auto">
+<header class="bg-red-500 text-white shadow-md sticky top-0 z-20">
+  <nav class="container mx-auto px-4 py-3">
+    <div class="flex flex-wrap justify-between items-center gap-4">
 
-    <!-- Desktop Navigation -->
-    <div class="flex justify-between items-center w-full">
+      <!-- Brand / Left Menu -->
+      <div class="flex items-center flex-wrap gap-2">
+        <a href="/" class="flex items-center gap-2 text-xl font-bold tracking-tight py-1 px-3 rounded-lg hover:bg-red-600 transition">
+          <i class="fa-solid fa-house-chimney"></i>
+          <span>airbnb</span>
+        </a>
 
-      <!-- Left Menu -->
-      <ul class="flex items-center flex-wrap gap-2">
+        <ul class="flex items-center flex-wrap gap-1 text-sm font-medium ml-2">
+          <li>
+            <a href="/"
+              class="<%= currentPage === 'index' ? 'bg-red-700 bg-opacity-40 text-white' : 'hover:bg-red-600 text-red-50' %> py-1.5 px-3 rounded-md transition">
+              Home
+            </a>
+          </li>
 
-        <li>
-          <a href="/"
-            class="<%= currentPage === 'index' ? 'bg-red-600 font-medium' : 'hover:bg-red-400' %> py-2 px-4 rounded-lg transition duration-300">
-            Airbnb
-          </a>
-        </li>
+          <li>
+            <a href="/homes"
+              class="<%= currentPage === 'Home' ? 'bg-red-700 bg-opacity-40 text-white' : 'hover:bg-red-600 text-red-50' %> py-1.5 px-3 rounded-md transition">
+              Explore Homes
+            </a>
+          </li>
 
-        <% if (isLoggedIn) { %>
+          <% if (isLoggedIn && user) { %>
+            <% if (user.userType === 'guest') { %>
+              <li>
+                <a href="/favourites"
+                  class="<%= currentPage === 'favourites' ? 'bg-red-700 bg-opacity-40 text-white' : 'hover:bg-red-600 text-red-50' %> py-1.5 px-3 rounded-md transition">
+                  <i class="fa-regular fa-heart mr-1"></i>Favourites
+                </a>
+              </li>
 
-          <% if (user && user.userType === 'guest') { %>
+              <li>
+                <a href="/bookings"
+                  class="<%= currentPage === 'bookings' ? 'bg-red-700 bg-opacity-40 text-white' : 'hover:bg-red-600 text-red-50' %> py-1.5 px-3 rounded-md transition">
+                  <i class="fa-regular fa-calendar-check mr-1"></i>Bookings
+                </a>
+              </li>
+            <% } else { %>
+              <li>
+                <a href="/host/host-home-list"
+                  class="<%= currentPage === 'host-homes' ? 'bg-red-700 bg-opacity-40 text-white' : 'hover:bg-red-600 text-red-50' %> py-1.5 px-3 rounded-md transition">
+                  <i class="fa-solid fa-list mr-1"></i>My Properties
+                </a>
+              </li>
 
-            <li>
-              <a href="/homes"
-                class="<%= currentPage === 'Home' ? 'bg-red-600 font-medium' : 'hover:bg-red-400' %> py-2 px-4 rounded-lg transition duration-300">
-                Homes
-              </a>
-            </li>
-
-            <li>
-              <a href="/favourites"
-                class="<%= currentPage === 'favourites' ? 'bg-red-600 font-medium' : 'hover:bg-red-400' %> py-2 px-4 rounded-lg transition duration-300">
-                Favourites
-              </a>
-            </li>
-
-            <li>
-              <a href="/bookings"
-                class="<%= currentPage === 'bookings' ? 'bg-red-600 font-medium' : 'hover:bg-red-400' %> py-2 px-4 rounded-lg transition duration-300">
-                Bookings
-              </a>
-            </li>
-
-          <% } else { %>
-
-            <li>
-              <a href="/host/host-home-list"
-                class="<%= currentPage === 'host-homes' ? 'bg-red-600 font-medium' : 'hover:bg-red-400' %> py-2 px-4 rounded-lg transition duration-300">
-                Host Homes
-              </a>
-            </li>
-
-            <li>
-              <a href="/host/add-home"
-                class="<%= currentPage === 'addHome' ? 'bg-red-600 font-medium' : 'hover:bg-red-400' %> py-2 px-4 rounded-lg transition duration-300">
-                Add Home
-              </a>
-            </li>
-
+              <li>
+                <a href="/host/add-home"
+                  class="<%= currentPage === 'addHome' ? 'bg-red-700 bg-opacity-40 text-white' : 'hover:bg-red-600 text-red-50' %> py-1.5 px-3 rounded-md transition">
+                  <i class="fa-solid fa-plus mr-1"></i>Add Home
+                </a>
+              </li>
+            <% } %>
           <% } %>
+        </ul>
+      </div>
 
-        <% } %>
-
-      </ul>
-
-      <!-- Right Menu -->
-      <ul class="flex items-center gap-3">
-
+      <!-- Right Menu: Auth / Profile -->
+      <div class="flex items-center gap-3 text-sm">
         <% if (!isLoggedIn) { %>
+          <a href="/signup"
+            class="border border-white text-white px-3.5 py-1.5 rounded-md hover:bg-red-600 transition font-medium">
+            Sign Up
+          </a>
 
-          <li>
-            <a href="/signup"
-              class="border border-white px-4 py-2 rounded hover:bg-red-400 transition">
-              Sign Up
-            </a>
-          </li>
-
-          <li>
-            <a href="/login"
-              class="bg-white text-red-500 px-4 py-2 rounded hover:bg-red-100 transition">
-              Login
-            </a>
-          </li>
-
+          <a href="/login"
+            class="bg-white text-red-600 px-3.5 py-1.5 rounded-md hover:bg-gray-100 transition font-semibold shadow-sm">
+            Login
+          </a>
         <% } else { %>
+          <div class="flex items-center gap-2 bg-red-600 bg-opacity-50 px-3 py-1.5 rounded-full text-xs sm:text-sm">
+            <i class="fa-solid fa-circle-user text-base"></i>
+            <span class="font-medium">
+              <%= user ? user.firstName : 'User' %>
+              <span class="opacity-75 text-xs">(<%= user ? user.userType : 'guest' %>)</span>
+            </span>
+          </div>
 
-          <li>
-            <form action="/logout" method="POST">
-              <button
-                type="submit"
-                class="border border-white px-4 py-2 rounded hover:bg-red-400 transition">
-                Logout
-              </button>
-            </form>
-          </li>
-
+          <form action="/logout" method="POST" class="inline">
+            <button
+              type="submit"
+              class="border border-white text-white text-xs sm:text-sm px-3 py-1.5 rounded-md hover:bg-red-600 transition font-medium">
+              Logout
+            </button>
+          </form>
         <% } %>
-
-      </ul>
+      </div>
 
     </div>
-
   </nav>
 </header>

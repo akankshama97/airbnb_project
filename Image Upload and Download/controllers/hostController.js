@@ -1,40 +1,50 @@
-const Home = require("../models/home");
+const path = require("path");
 const fs = require("fs");
+const Home = require("../models/home");
+const User = require("../models/user");
+const rootDir = require("../utils/pathUtil");
 
 exports.getAddHome = (req, res, next) => {
   res.render("host/edit-home", {
-    pageTitle: "Add Home to airbnb",
+    pageTitle: "Add Home to Airbnb",
     currentPage: "addHome",
     editing: false,
+    errorMessage: null,
+    home: {},
     isLoggedIn: req.isLoggedIn,
     user: req.session.user,
   });
 };
 
-exports.getEditHome = (req, res, next) => {
-  const homeId = req.params.homeId;
-  const editing = req.query.editing === "true";
+exports.getEditHome = async (req, res, next) => {
+  try {
+    const homeId = req.params.homeId;
+    const editing = req.query.editing === "true";
 
-  Home.findById(homeId).then((home) => {
+    const home = await Home.findById(homeId);
     if (!home) {
       console.log("Home not found for editing.");
       return res.redirect("/host/host-home-list");
     }
 
-    console.log(homeId, editing, home);
     res.render("host/edit-home", {
       home: home,
       pageTitle: "Edit your Home",
       currentPage: "host-homes",
       editing: editing,
+      errorMessage: null,
       isLoggedIn: req.isLoggedIn,
       user: req.session.user,
     });
-  });
+  } catch (err) {
+    console.log("Error in getEditHome:", err);
+    res.redirect("/host/host-home-list");
+  }
 };
 
-exports.getHostHomes = (req, res, next) => {
-  Home.find().then((registeredHomes) => {
+exports.getHostHomes = async (req, res, next) => {
+  try {
+    const registeredHomes = await Home.find();
     res.render("host/host-home-list", {
       registeredHomes: registeredHomes,
       pageTitle: "Host Homes List",
@@ -42,78 +52,123 @@ exports.getHostHomes = (req, res, next) => {
       isLoggedIn: req.isLoggedIn,
       user: req.session.user,
     });
-  });
-};
-
-exports.postAddHome = (req, res, next) => {
-  const { houseName, price, location, rating, description } = req.body;
-  console.log(houseName, price, location, rating, description);
-  console.log(req.file);
-
-  if (!req.file) {
-    return res.status(422).send("No image provided");
+  } catch (err) {
+    console.log("Error in getHostHomes:", err);
+    res.render("host/host-home-list", {
+      registeredHomes: [],
+      pageTitle: "Host Homes List",
+      currentPage: "host-homes",
+      isLoggedIn: req.isLoggedIn,
+      user: req.session.user,
+    });
   }
-
-  const photo = req.file.path;
-
-  const home = new Home({
-    houseName,
-    price,
-    location,
-    rating,
-    photo,
-    description,
-  });
-  home.save().then(() => {
-    console.log("Home Saved successfully");
-  });
-
-  res.redirect("/host/host-home-list");
 };
 
-exports.postEditHome = (req, res, next) => {
-  const { id, houseName, price, location, rating, description } =
-    req.body;;
-  Home.findById(id)
-    .then((home) => {
-      home.houseName = houseName;
-      home.price = price;
-      home.location = location;
-      home.rating = rating;
-      home.description = description;
+exports.postAddHome = async (req, res, next) => {
+  try {
+    const { houseName, price, location, rating, description } = req.body;
 
-      if (req.file) {
-        fs.unlink(home.photo, (err) => {
-          if (err) {
-            console.log("Error while deleting file ", err);
-          }
-        });
-        home.photo = req.file.path;
+    if (!req.file) {
+      return res.status(422).render("host/edit-home", {
+        pageTitle: "Add Home to Airbnb",
+        currentPage: "addHome",
+        editing: false,
+        errorMessage: "Please upload an image for the home (JPEG, JPG, PNG, WEBP)",
+        home: { houseName, price, location, rating, description },
+        isLoggedIn: req.isLoggedIn,
+        user: req.session.user,
+      });
+    }
+
+    // Always store path with forward slash and leading slash for clean URL resolution
+    const photo = "/uploads/" + req.file.filename;
+
+    const home = new Home({
+      houseName,
+      price: Number(price),
+      location,
+      rating: Number(rating) || 5,
+      photo,
+      description,
+    });
+
+    await home.save();
+    console.log("Home saved successfully");
+    res.redirect("/host/host-home-list");
+  } catch (err) {
+    console.log("Error in postAddHome:", err);
+    res.status(500).redirect("/host/host-home-list");
+  }
+};
+
+exports.postEditHome = async (req, res, next) => {
+  try {
+    const { id, houseName, price, location, rating, description } = req.body;
+    const home = await Home.findById(id);
+
+    if (!home) {
+      return res.redirect("/host/host-home-list");
+    }
+
+    home.houseName = houseName;
+    home.price = Number(price);
+    home.location = location;
+    home.rating = Number(rating) || home.rating;
+    home.description = description;
+
+    if (req.file) {
+      // If there was an old uploaded file, safely remove it
+      if (home.photo && home.photo.includes("/uploads/")) {
+        const oldFilename = home.photo.replace(/^\/uploads\//, "").replace(/^uploads[\/\\]/, "");
+        const oldPath = path.join(rootDir, "uploads", oldFilename);
+        if (fs.existsSync(oldPath)) {
+          fs.unlink(oldPath, (err) => {
+            if (err) console.log("Error while deleting old photo:", err);
+          });
+        }
+      }
+      home.photo = "/uploads/" + req.file.filename;
+    }
+
+    await home.save();
+    console.log("Home updated successfully:", home._id);
+    res.redirect("/host/host-home-list");
+  } catch (err) {
+    console.log("Error in postEditHome:", err);
+    res.redirect("/host/host-home-list");
+  }
+};
+
+exports.postDeleteHome = async (req, res, next) => {
+  try {
+    const homeId = req.params.homeId;
+    const home = await Home.findById(homeId);
+
+    if (home) {
+      // Safely delete photo file if it was uploaded
+      if (home.photo && home.photo.includes("/uploads/")) {
+        const filename = home.photo.replace(/^\/uploads\//, "").replace(/^uploads[\/\\]/, "");
+        const filePath = path.join(rootDir, "uploads", filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlink(filePath, (err) => {
+            if (err) console.log("Error while deleting photo file:", err);
+          });
+        }
       }
 
-      home
-        .save()
-        .then((result) => {
-          console.log("Home updated ", result);
-        })
-        .catch((err) => {
-          console.log("Error while updating ", err);
-        });
-      res.redirect("/host/host-home-list");
-    })
-    .catch((err) => {
-      console.log("Error while finding home ", err);
-    });
-};
+      // Also clean up from any user's favourites list
+      await User.updateMany(
+        { favourites: homeId },
+        { $pull: { favourites: homeId } }
+      );
 
-exports.postDeleteHome = (req, res, next) => {
-  const homeId = req.params.homeId;
-  console.log("Came to delete ", homeId);
-  Home.findByIdAndDelete(homeId)
-    .then(() => {
-      res.redirect("/host/host-home-list");
-    })
-    .catch((error) => {
-      console.log("Error while deleting ", error);
-    });
+      await Home.findByIdAndDelete(homeId);
+      console.log("Home deleted successfully:", homeId);
+    }
+
+    res.redirect("/host/host-home-list");
+  } catch (err) {
+    console.log("Error in postDeleteHome:", err);
+    res.redirect("/host/host-home-list");
+  }
 };
