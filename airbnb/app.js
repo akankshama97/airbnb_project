@@ -16,7 +16,16 @@ app.get("/images/:filename", (req, res) => {
 app.use("/", userRoutes);
 app.use("/host", hostRoutes);
 
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on address http://localhost:${PORT}`);
+// 404 error handler
+app.use((req, res, next) => {
+  res.status(404).sendFile(path.join(__dirname, "views", "404.html"));
 });
+
+const PORT = process.env.PORT || 3000;
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running on address http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

@@ -158,10 +158,15 @@ app.use(errorsController.pageNotFound);
 mongoose.connect(DB_PATH)
   .then(() => {
     console.log('Connected to MongoDB successfully');
-    app.listen(PORT, () => {
-      console.log(`Server running on address http://localhost:${PORT}`);
-    });
+    if (!process.env.VERCEL) {
+      app.listen(PORT, () => {
+        console.log(`Server running on address http://localhost:${PORT}`);
+      });
+    }
   })
   .catch((err) => {
     console.log('Error while connecting to Mongo: ', err);
   });
+
+module.exports = app;
+
